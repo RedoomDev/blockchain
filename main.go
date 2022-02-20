@@ -31,9 +31,10 @@ type Blockchain struct {
 	difficulty   int
 }
 
-func (b Block) getData() []byte {
-	data, _ := json.Marshal(b.data)
-	return data
+type Data struct {
+	preHash   string
+	hash      string
+	blockData map[string]interface{}
 }
 
 func (b Block) calculateHash() string {
@@ -62,7 +63,7 @@ func CreateBlockchain(difficulty int) Blockchain {
 	}
 }
 
-func (b *Blockchain) addBlock(from, to string, amount float64) {
+func (b *Blockchain) addBlock(from, to string, amount float64) Data {
 	blockData := map[string]interface{}{
 		"from":   from,
 		"to":     to,
@@ -76,6 +77,12 @@ func (b *Blockchain) addBlock(from, to string, amount float64) {
 	}
 	newBlock.mine(b.difficulty)
 	b.chain = append(b.chain, newBlock)
+	data := Data{
+		preHash:   newBlock.previousHash,
+		hash:      b.chain[len(b.chain)-1].hash,
+		blockData: blockData,
+	}
+	return data
 }
 
 func (b Blockchain) isValid() bool {
@@ -93,7 +100,8 @@ func main() {
 
 	// create a new blockchain instance with a mining difficulty of 2
 	blockchain := CreateBlockchain(1)
-
+	blockchain.addBlock("Alice", "Bob", 5)
+	blockchain.addBlock("John", "Bob", 2)
 	// record transactions on the blockchain for Alice, Bob, and John
 
 	// check if the blockchain is valid; expecting true
@@ -128,13 +136,14 @@ func main() {
 		reqBody := string(buf[0:num])
 		var jsonMap map[string]interface{}
 		json.Unmarshal([]byte(reqBody), &jsonMap)
-
-		fmt.Println(blockchain.chain)
-
+		blockman := blockchain.addBlock("dasdsadsad", "user", 1)
 		c.JSON(200, gin.H{
-			"error":   false,
-			"message": "success",
-			"reqBody": jsonMap,
+			"error":     false,
+			"message":   "success",
+			"reqBody":   jsonMap,
+			"hash":      blockman.hash,
+			"preHash":   blockman.preHash,
+			"blockData": blockman.blockData,
 		})
 	})
 	r.Run(":5000")
