@@ -31,6 +31,11 @@ type Blockchain struct {
 	difficulty   int
 }
 
+func (b Block) getData() []byte {
+	data, _ := json.Marshal(b.data)
+	return data
+}
+
 func (b Block) calculateHash() string {
 	data, _ := json.Marshal(b.data)
 	blockData := b.previousHash + string(data) + b.timestamp.String() + strconv.Itoa(b.pow)
@@ -90,8 +95,6 @@ func main() {
 	blockchain := CreateBlockchain(1)
 
 	// record transactions on the blockchain for Alice, Bob, and John
-	blockchain.addBlock("Alice", "Bob", 5)
-	blockchain.addBlock("John", "Bob", 2)
 
 	// check if the blockchain is valid; expecting true
 	fmt.Println(blockchain.isValid())
@@ -121,16 +124,13 @@ func main() {
 	})
 	r.POST("/new/user", func(c *gin.Context) {
 		buf := make([]byte, 1024)
-		num, err := c.Request.Body.Read(buf)
-		if err != nil {
-			c.JSON(200, gin.H{
-				"error":   true,
-				"message": "error",
-			})
-		}
+		num, _ := c.Request.Body.Read(buf)
 		reqBody := string(buf[0:num])
 		var jsonMap map[string]interface{}
 		json.Unmarshal([]byte(reqBody), &jsonMap)
+
+		fmt.Println(blockchain.chain)
+
 		c.JSON(200, gin.H{
 			"error":   false,
 			"message": "success",
