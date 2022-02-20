@@ -87,7 +87,7 @@ func (b Blockchain) isValid() bool {
 func main() {
 
 	// create a new blockchain instance with a mining difficulty of 2
-	blockchain := CreateBlockchain(2)
+	blockchain := CreateBlockchain(1)
 
 	// record transactions on the blockchain for Alice, Bob, and John
 	blockchain.addBlock("Alice", "Bob", 5)
@@ -117,6 +117,24 @@ func main() {
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
+		})
+	})
+	r.POST("/new/user", func(c *gin.Context) {
+		buf := make([]byte, 1024)
+		num, err := c.Request.Body.Read(buf)
+		if err != nil {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "error",
+			})
+		}
+		reqBody := string(buf[0:num])
+		var jsonMap map[string]interface{}
+		json.Unmarshal([]byte(reqBody), &jsonMap)
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "success",
+			"reqBody": jsonMap,
 		})
 	})
 	r.Run(":5000")
