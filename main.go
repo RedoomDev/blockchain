@@ -17,6 +17,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+//commit atim de amk
+
 type Block struct {
 	data         map[string]interface{}
 	hash         string
@@ -136,7 +138,7 @@ func main() {
 		reqBody := string(buf[0:num])
 		var jsonMap map[string]interface{}
 		json.Unmarshal([]byte(reqBody), &jsonMap)
-		blockman := blockchain.addBlock("dasdsadsad", "user", 1)
+		blockman := blockchain.addBlock("dsads", "user", 1)
 		c.JSON(200, gin.H{
 			"error":     false,
 			"message":   "success",
