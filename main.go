@@ -17,8 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//commit atim de amk
-
 type Block struct {
 	data         map[string]interface{}
 	hash         string
