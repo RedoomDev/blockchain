@@ -107,23 +107,6 @@ func main() {
 	// check if the blockchain is valid; expecting true
 	fmt.Println(blockchain.isValid())
 
-	godotenv.Load(".env")
-	uri := os.Getenv("MONGO_URL")
-
-	if uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
-	}
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
-
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -137,6 +120,7 @@ func main() {
 		var jsonMap map[string]interface{}
 		json.Unmarshal([]byte(reqBody), &jsonMap)
 		blockman := blockchain.addBlock("dsads", "user", 1)
+
 		c.JSON(200, gin.H{
 			"error":     false,
 			"message":   "success",
