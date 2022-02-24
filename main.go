@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Block struct {
@@ -92,6 +98,24 @@ func (b Blockchain) isValid() bool {
 
 func main() {
 
+	godotenv.Load(".env")
+	uri := os.Getenv("MONGO_URI")
+	secret := os.Getenv("SECRET_KEY")
+
+	if uri == "" {
+		log.Fatal("You must set your 'MONGO_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
+	}
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	if err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+
 	blockchain := CreateBlockchain(1)
 
 	r := gin.Default()
@@ -102,6 +126,14 @@ func main() {
 	})
 
 	r.POST("/new/user", func(c *gin.Context) {
+
+		if secret != c.PostForm("secret_key") {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "Bu anahtar yanlış!",
+			})
+			return
+		}
 
 		blockman := blockchain.addBlock(c.PostForm("username")+"_"+c.PostForm("email")+"_"+c.PostForm("id"), "users", 1)
 
@@ -115,6 +147,15 @@ func main() {
 	})
 	r.POST("/new/post", func(c *gin.Context) {
 		user := c.PostForm("username") + "_" + c.PostForm("email") + "_" + c.PostForm("id")
+
+		if secret != c.PostForm("secret_key") {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "Bu anahtar yanlış!",
+			})
+			return
+		}
+
 		blockman := blockchain.addBlock(c.PostForm("post_id"), user, 1)
 
 		c.JSON(200, gin.H{
@@ -130,6 +171,15 @@ func main() {
 		user := c.PostForm("username") + "_" + c.PostForm("email") + "_" + c.PostForm("id")
 		owner := c.PostForm("post_owner") + "_" + c.PostForm("post_owner_email") + "_" + c.PostForm("post_owner_id")
 		post := c.PostForm("post_id")
+
+		if secret != c.PostForm("secret_key") {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "Bu anahtar yanlış!",
+			})
+			return
+		}
+
 		blockman := blockchain.addBlock(c.PostForm("comment_id")+"&"+post, post+"&"+owner+"&"+user, 1)
 
 		c.JSON(200, gin.H{
