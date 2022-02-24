@@ -103,7 +103,7 @@ func main() {
 
 	r.POST("/new/user", func(c *gin.Context) {
 
-		blockman := blockchain.addBlock(c.PostForm("username")+"_"+c.PostForm("email"), "users", 1)
+		blockman := blockchain.addBlock(c.PostForm("username")+"_"+c.PostForm("email")+"_"+c.PostForm("id"), "users", 1)
 
 		c.JSON(200, gin.H{
 			"error":     false,
@@ -115,7 +115,6 @@ func main() {
 	})
 	r.POST("/new/post", func(c *gin.Context) {
 		user := c.PostForm("username") + "_" + c.PostForm("email") + "_" + c.PostForm("id")
-
 		blockman := blockchain.addBlock(c.PostForm("post_id"), user, 1)
 
 		c.JSON(200, gin.H{
