@@ -113,5 +113,17 @@ func main() {
 			"blockData": blockman.blockData,
 		})
 	})
+	r.POST("/new/post", func(c *gin.Context) {
+		blockman := blockchain.addBlock(c.PostForm("post_id"), c.PostForm("username")+"_"+c.PostForm("email"), 1)
+
+		c.JSON(200, gin.H{
+			"error":     false,
+			"message":   "success",
+			"hash":      blockman.hash,
+			"preHash":   blockman.preHash,
+			"blockData": blockman.blockData,
+		})
+	})
+
 	r.Run(":5000")
 }
