@@ -1,20 +1,14 @@
 package main
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Block struct {
@@ -98,33 +92,22 @@ func (b Blockchain) isValid() bool {
 
 func main() {
 
-	// create a new blockchain instance with a mining difficulty of 2
 	blockchain := CreateBlockchain(1)
-	blockchain.addBlock("Alice", "Bob", 5)
-	blockchain.addBlock("John", "Bob", 2)
-	// record transactions on the blockchain for Alice, Bob, and John
-
-	// check if the blockchain is valid; expecting true
-	fmt.Println(blockchain.isValid())
 
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
+	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "pong",
+			"message": "redoom blockchain system",
 		})
 	})
+
 	r.POST("/new/user", func(c *gin.Context) {
-		buf := make([]byte, 1024)
-		num, _ := c.Request.Body.Read(buf)
-		reqBody := string(buf[0:num])
-		var jsonMap map[string]interface{}
-		json.Unmarshal([]byte(reqBody), &jsonMap)
-		blockman := blockchain.addBlock("dsads", "user", 1)
+
+		blockman := blockchain.addBlock(c.PostForm("username")+"_"+c.PostForm("email"), "users", 1)
 
 		c.JSON(200, gin.H{
 			"error":     false,
 			"message":   "success",
-			"reqBody":   jsonMap,
 			"hash":      blockman.hash,
 			"preHash":   blockman.preHash,
 			"blockData": blockman.blockData,
