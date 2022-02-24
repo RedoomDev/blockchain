@@ -114,7 +114,9 @@ func main() {
 		})
 	})
 	r.POST("/new/post", func(c *gin.Context) {
-		blockman := blockchain.addBlock(c.PostForm("post_id"), c.PostForm("username")+"_"+c.PostForm("email"), 1)
+		user := c.PostForm("username") + "_" + c.PostForm("email") + "_" + c.PostForm("id")
+
+		blockman := blockchain.addBlock(c.PostForm("post_id"), user, 1)
 
 		c.JSON(200, gin.H{
 			"error":     false,
@@ -124,6 +126,20 @@ func main() {
 			"blockData": blockman.blockData,
 		})
 	})
+	r.POST("/new/comment", func(c *gin.Context) {
 
+		user := c.PostForm("username") + "_" + c.PostForm("email") + "_" + c.PostForm("id")
+		owner := c.PostForm("post_owner") + "_" + c.PostForm("post_owner_email") + "_" + c.PostForm("post_owner_id")
+		post := c.PostForm("post_id")
+		blockman := blockchain.addBlock(c.PostForm("comment_id")+"&"+post, post+"&"+owner+"&"+user, 1)
+
+		c.JSON(200, gin.H{
+			"error":     false,
+			"message":   "success",
+			"hash":      blockman.hash,
+			"preHash":   blockman.preHash,
+			"blockData": blockman.blockData,
+		})
+	})
 	r.Run(":5000")
 }
