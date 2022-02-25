@@ -137,6 +137,7 @@ func main() {
 
 		username := c.PostForm("username")
 		email := c.PostForm("email")
+
 		if username == "" || email == "" {
 			c.JSON(200, gin.H{
 				"error":   true,
@@ -159,8 +160,10 @@ func main() {
 			"hash":      blockman.hash,
 			"preHash":   blockman.preHash,
 			"blockData": blockman.blockData,
+			"user":      user,
 		})
 	})
+
 	r.POST("/new/post", func(c *gin.Context) {
 		user := c.PostForm("id")
 
