@@ -137,11 +137,19 @@ func main() {
 
 		username := c.PostForm("username")
 		email := c.PostForm("email")
+		if username == "" || email == "" {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "Hepsini doldurun",
+			})
+			return
+		}
 
 		user := map[string]interface{}{
 			"username": c.PostForm("username"),
 			"email":    c.PostForm("email"),
 		}
+
 		fmt.Print(user)
 		blockman := blockchain.addBlock(c.PostForm("id"), "users", 1)
 
