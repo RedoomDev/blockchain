@@ -135,7 +135,15 @@ func main() {
 			return
 		}
 
-		blockman := blockchain.addBlock(c.PostForm("username")+"_"+c.PostForm("email")+"_"+c.PostForm("id"), "users", 1)
+		username := c.PostForm("username")
+		email := c.PostForm("email")
+
+		user := map[string]interface{}{
+			"username": c.PostForm("username"),
+			"email":    c.PostForm("email"),
+		}
+		fmt.Print(user)
+		blockman := blockchain.addBlock(c.PostForm("id"), "users", 1)
 
 		c.JSON(200, gin.H{
 			"error":     false,
@@ -146,7 +154,7 @@ func main() {
 		})
 	})
 	r.POST("/new/post", func(c *gin.Context) {
-		user := c.PostForm("username") + "_" + c.PostForm("email") + "_" + c.PostForm("id")
+		user := c.PostForm("id")
 
 		if secret != c.PostForm("secret_key") {
 			c.JSON(200, gin.H{
@@ -168,8 +176,8 @@ func main() {
 	})
 	r.POST("/new/comment", func(c *gin.Context) {
 
-		user := c.PostForm("username") + "_" + c.PostForm("email") + "_" + c.PostForm("id")
-		owner := c.PostForm("post_owner") + "_" + c.PostForm("post_owner_email") + "_" + c.PostForm("post_owner_id")
+		user := c.PostForm("id")
+		owner := c.PostForm("post_owner_id")
 		post := c.PostForm("post_id")
 
 		if secret != c.PostForm("secret_key") {
@@ -180,7 +188,7 @@ func main() {
 			return
 		}
 
-		blockman := blockchain.addBlock(c.PostForm("comment_id")+"&"+post, post+"&"+owner+"&"+user, 1)
+		blockman := blockchain.addBlock(c.PostForm("comment_id"), post+"&"+owner+"&"+user, 1)
 
 		c.JSON(200, gin.H{
 			"error":     false,
