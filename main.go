@@ -13,6 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -116,6 +118,8 @@ func main() {
 		}
 	}()
 
+	users := client.Database("blockchain").Collection("users")
+
 	blockchain := CreateBlockchain(1)
 
 	r := gin.Default()
@@ -146,13 +150,63 @@ func main() {
 			return
 		}
 
+		var userCheck bson.M
+		err := users.FindOne(context.TODO(), bson.D{
+			{"$or", bson.A{
+				bson.D{{"email", email}},
+				bson.D{{"username", username}},
+			}},
+		}).Decode(&userCheck)
+
+		if err == nil {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "Bu kullanıcı zaten kayıtlı!",
+			})
+			return
+		}
+
+		doc := bson.D{
+			{"username", username},
+			{"email", email},
+		}
+
+		result, err := users.InsertOne(context.TODO(), doc)
+
+		if err != nil {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "DB de bir hata oldu",
+			})
+			return
+		}
+
+		blockman := blockchain.addBlock(fmt.Sprintf("%v", result.InsertedID.(primitive.ObjectID).Hex()), "users", 1)
+
+		doc2 := bson.D{
+			{"username", username},
+			{"email", email},
+			{"hash", blockman.hash},
+			{"preHash", blockman.preHash},
+			{"blockData", blockman.blockData},
+		}
+
+		result2, err := users.ReplaceOne(context.TODO(), bson.D{{"email", email}}, doc2)
+
+		if err != nil {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "DB de bir hata oldu",
+			})
+			return
+		}
+
 		user := map[string]interface{}{
 			"username": c.PostForm("username"),
 			"email":    c.PostForm("email"),
+			"id":       result.InsertedID,
+			"result2":  result2,
 		}
-
-		fmt.Print(user)
-		blockman := blockchain.addBlock(c.PostForm("id"), "users", 1)
 
 		c.JSON(200, gin.H{
 			"error":     false,
