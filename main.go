@@ -267,21 +267,27 @@ func main() {
 			return
 		}
 
-		var userCheck bson.M
 		ownerID, _ := primitive.ObjectIDFromHex(owner)
 		userID, _ := primitive.ObjectIDFromHex(user)
 
-		err := users.FindOne(context.TODO(), bson.D{
+		filter := bson.D{
 			{"$or", bson.A{
 				bson.D{{"_id", ownerID}},
 				bson.D{{"_id", userID}},
-			},
-			}}).Decode(&userCheck)
+			}},
+		}
 
-		if err != nil {
+		userCheck, _ := users.Find(context.TODO(), filter)
+
+		var results []bson.M
+		if err = userCheck.All(context.TODO(), &results); err != nil {
+			log.Fatal(err)
+		}
+
+		if len(results) != 2 {
 			c.JSON(200, gin.H{
 				"error":   true,
-				"message": "Post owner bulunamadı!",
+				"message": "Kullanıcılar bulunamadı!",
 			})
 			return
 		}
