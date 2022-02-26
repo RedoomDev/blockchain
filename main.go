@@ -267,6 +267,25 @@ func main() {
 			return
 		}
 
+		var userCheck bson.M
+		ownerID, _ := primitive.ObjectIDFromHex(owner)
+		userID, _ := primitive.ObjectIDFromHex(user)
+
+		err := users.FindOne(context.TODO(), bson.D{
+			{"$or", bson.A{
+				bson.D{{"_id", ownerID}},
+				bson.D{{"_id", userID}},
+			},
+			}}).Decode(&userCheck)
+
+		if err != nil {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "Post owner bulunamadı!",
+			})
+			return
+		}
+
 		blockman := blockchain.addBlock(c.PostForm("comment_id"), post+"&"+owner+"&"+user, 1)
 
 		c.JSON(200, gin.H{
