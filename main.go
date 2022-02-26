@@ -229,6 +229,20 @@ func main() {
 			return
 		}
 
+		var userCheck bson.M
+		objID, _ := primitive.ObjectIDFromHex(user)
+		err := users.FindOne(context.TODO(), bson.D{
+			{"_id", objID},
+		}).Decode(&userCheck)
+
+		if err != nil {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "Kullanıcı bulunamadı!",
+			})
+			return
+		}
+
 		blockman := blockchain.addBlock(c.PostForm("post_id"), user, 1)
 
 		c.JSON(200, gin.H{
