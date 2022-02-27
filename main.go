@@ -130,6 +130,7 @@ func main() {
 		})
 	})
 
+	// /new/user
 	r.POST("/new/user", func(c *gin.Context) {
 
 		if secret != c.PostForm("secret_key") {
@@ -188,7 +189,6 @@ func main() {
 			{"username", username},
 			{"email", email},
 			{"hash", blockman.hash},
-			{"preHash", blockman.preHash},
 			{"blockData", blockman.blockData},
 		}
 
@@ -213,12 +213,12 @@ func main() {
 			"error":     false,
 			"message":   "success",
 			"hash":      blockman.hash,
-			"preHash":   blockman.preHash,
 			"blockData": blockman.blockData,
 			"user":      user,
 		})
 	})
 
+	// /new/post
 	r.POST("/new/post", func(c *gin.Context) {
 		user := c.PostForm("id")
 
@@ -255,7 +255,6 @@ func main() {
 		UpdatePost := bson.D{
 			{"owner", user},
 			{"hash", blockman.hash},
-			{"preHash", blockman.preHash},
 			{"blockData", blockman.blockData},
 		}
 
@@ -265,13 +264,13 @@ func main() {
 			"error":      false,
 			"message":    "success",
 			"hash":       blockman.hash,
-			"preHash":    blockman.preHash,
 			"blockData":  blockman.blockData,
 			"comment_id": result.InsertedID,
 			"result":     update,
 		})
 	})
 
+	// /new/comment
 	r.POST("/new/comment", func(c *gin.Context) {
 
 		user := c.PostForm("id")
@@ -316,7 +315,6 @@ func main() {
 		c.JSON(200, gin.H{
 			"error":     false,
 			"message":   "success",
-			"hash":      blockman.hash,
 			"preHash":   blockman.preHash,
 			"blockData": blockman.blockData,
 		})
