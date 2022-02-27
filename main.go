@@ -120,6 +120,7 @@ func main() {
 
 	users := client.Database("blockchain").Collection("users")
 	posts := client.Database("blockchain").Collection("posts")
+	comments := client.Database("blockchain").Collection("comments")
 
 	blockchain := CreateBlockchain(1)
 
@@ -261,12 +262,12 @@ func main() {
 		update, _ := posts.ReplaceOne(context.TODO(), bson.D{{"_id", result.InsertedID.(primitive.ObjectID)}}, UpdatePost)
 
 		c.JSON(200, gin.H{
-			"error":      false,
-			"message":    "success",
-			"hash":       blockman.hash,
-			"blockData":  blockman.blockData,
-			"comment_id": result.InsertedID,
-			"result":     update,
+			"error":     false,
+			"message":   "success",
+			"hash":      blockman.hash,
+			"blockData": blockman.blockData,
+			"post_id":   result.InsertedID,
+			"result":    update,
 		})
 	})
 
@@ -310,13 +311,33 @@ func main() {
 			return
 		}
 
-		blockman := blockchain.addBlock(c.PostForm("comment_id"), post+"&"+owner+"&"+user, 1)
+		NewComment := bson.D{
+			{"owner", owner},
+			{"user_id", user},
+			{"post", post},
+		}
+
+		result, _ := comments.InsertOne(context.TODO(), NewComment)
+
+		blockman := blockchain.addBlock(fmt.Sprintf("%v", result.InsertedID.(primitive.ObjectID).Hex()), post+"&"+owner+"&"+user, 1)
+
+		UpdateComment := bson.D{
+			{"owner", owner},
+			{"user_id", user},
+			{"post", post},
+			{"hash", blockman.hash},
+			{"blockData", blockman.blockData},
+		}
+
+		update, _ := comments.ReplaceOne(context.TODO(), bson.D{{"_id", result.InsertedID.(primitive.ObjectID)}}, UpdateComment)
 
 		c.JSON(200, gin.H{
-			"error":     false,
-			"message":   "success",
-			"preHash":   blockman.preHash,
-			"blockData": blockman.blockData,
+			"error":      false,
+			"message":    "success",
+			"preHash":    blockman.preHash,
+			"blockData":  blockman.blockData,
+			"comment_id": result.InsertedID,
+			"result":     update,
 		})
 	})
 	r.Run(":5000")
